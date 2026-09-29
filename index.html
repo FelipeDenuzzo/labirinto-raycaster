@@ -29,13 +29,13 @@
       display: block;
       image-rendering: pixelated;
     }
-    #overlay-orientacao {
+    #tela-inicio {
       position: absolute;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(10, 10, 15, 0.96);
+      background: rgba(10, 12, 18, 0.95);
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -44,55 +44,57 @@
       z-index: 50;
       text-align: center;
       padding: 24px;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
     }
-    #overlay-orientacao.oculto {
+    #tela-inicio.oculto {
       display: none;
     }
-    .icone-celular {
-      font-size: 3.2rem;
-      margin-bottom: 1rem;
-      animation: rotacionar 2s infinite ease-in-out;
+    .icone-compass {
+      font-size: 3.5rem;
+      margin-bottom: 1.2rem;
+      animation: flutuar 2.5s infinite ease-in-out;
     }
-    @keyframes rotacionar {
-      0%, 100% { transform: rotate(0deg); }
-      50% { transform: rotate(90deg); }
+    @keyframes flutuar {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(10deg); }
     }
     #botao-avancar {
       position: absolute;
-      bottom: 24px;
+      bottom: 36px;
       left: 50%;
       transform: translateX(-50%);
-      width: 220px;
-      height: 60px;
-      background: rgba(255, 255, 255, 0.18);
-      border: 2px solid rgba(255, 255, 255, 0.45);
-      border-radius: 30px;
+      width: 240px;
+      height: 66px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 33px;
       color: #fff;
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       letter-spacing: 2px;
       backdrop-filter: blur(12px);
       z-index: 10;
       outline: none;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
       transition: background 0.15s, transform 0.1s;
     }
     #botao-avancar:active, #botao-avancar.pressionado {
-      background: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.45);
       border-color: #fff;
       transform: translateX(-50%) scale(0.96);
     }
     #hud-info {
       position: absolute;
-      top: 14px;
-      left: 18px;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.85rem;
+      top: 20px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 0.9rem;
       letter-spacing: 1px;
       z-index: 10;
       pointer-events: none;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
     }
     #tela-vitoria {
       position: absolute;
@@ -100,7 +102,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.88);
+      background: rgba(0, 0, 0, 0.9);
       color: #fff;
       display: none;
       flex-direction: column;
@@ -108,24 +110,25 @@
       justify-content: center;
       z-index: 60;
       text-align: center;
+      padding: 24px;
       backdrop-filter: blur(14px);
     }
     #tela-vitoria.visivel {
       display: flex;
     }
     .btn-acao {
-      margin-top: 18px;
-      padding: 14px 32px;
-      font-size: 1rem;
+      margin-top: 20px;
+      padding: 16px 36px;
+      font-size: 1.1rem;
       background: #4ade80;
-      color: #0b1e10;
+      color: #052e16;
       border: none;
-      border-radius: 24px;
-      font-weight: 700;
+      border-radius: 28px;
+      font-weight: 800;
       letter-spacing: 1px;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(74, 222, 128, 0.35);
-      transition: transform 0.1s, background-color 0.2s;
+      box-shadow: 0 8px 24px rgba(74, 222, 128, 0.35);
+      transition: transform 0.1s;
     }
     .btn-acao:active {
       transform: scale(0.96);
@@ -138,38 +141,49 @@
 
   <div id="hud-info">Gire o corpo 360° para olhar</div>
 
-  <div id="overlay-orientacao">
-    <div class="icone-celular">📱</div>
-    <h2>Gire o celular na horizontal</h2>
-    <p style="margin-top: 10px; color: #cbd5e1; max-width: 440px; line-height: 1.4;">
-      Para jogar, mantenha o celular na horizontal e <strong>gire o próprio corpo em 360°</strong> para olhar os caminhos do labirinto.
+  <div id="tela-inicio">
+    <div class="icone-compass">🧭</div>
+    <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Labirinto 360°</h2>
+    <p style="color: #cbd5e1; max-width: 300px; line-height: 1.5; font-size: 1rem;">
+      Fique em pé ou sentado e <strong>gire no próprio eixo</strong> para olhar ao redor. Segure o botão para andar.
     </p>
-    <button class="btn-acao" id="btn-iniciar" style="margin-top: 24px;">ENTRAR NO LABIRINTO</button>
+    <button class="btn-acao" id="btn-iniciar">ENTRAR NO LABIRINTO</button>
   </div>
 
   <button id="botao-avancar">AVANÇAR</button>
 
   <div id="tela-vitoria">
-    <h2 style="font-size: 2rem; color: #4ade80;">Parabéns! 🏆</h2>
-    <p style="color: #cbd5e1; margin-top: 8px; font-size: 1.1rem;">Você encontrou a saída do labirinto.</p>
+    <h2 style="font-size: 2.2rem; color: #4ade80;">Parabéns! 🏆</h2>
+    <p style="color: #cbd5e1; margin-top: 10px; font-size: 1.15rem;">Você encontrou a saída!</p>
     <button class="btn-acao" onclick="reiniciarJogo()">JOGAR NOVAMENTE</button>
   </div>
 
   <script>
-    // Canvas e Contexto
     const canvas = document.getElementById("tela-jogo");
     const ctx = canvas.getContext("2d");
     const botaoAvancar = document.getElementById("botao-avancar");
-    const overlayOrientacao = document.getElementById("overlay-orientacao");
+    const telaInicio = document.getElementById("tela-inicio");
     const btnIniciar = document.getElementById("btn-iniciar");
     const telaVitoria = document.getElementById("tela-vitoria");
 
-    // Resolução interna do Raycaster
-    const LARGURA_INTERNA = 320;
-    const ALTURA_INTERNA = 200;
-    const COLUNAS = 120;
-    const L = LARGURA_INTERNA / COLUNAS;
+    // Resolução interna adaptável ao modo vertical
+    let larguraInterna = 240;
+    let alturaInterna = 360;
+    let colunas = 120;
+    let larguraColuna = larguraInterna / colunas;
     const FOV = Math.PI / 3; // 60 graus
+
+    function redimensionar() {
+      const aspecto = window.innerHeight / window.innerWidth;
+      larguraInterna = 240;
+      alturaInterna = Math.round(larguraInterna * aspecto);
+      colunas = 120;
+      larguraColuna = larguraInterna / colunas;
+
+      canvas.width = larguraInterna;
+      canvas.height = alturaInterna;
+    }
+    window.addEventListener("resize", redimensionar);
 
     // Matriz do Mapa (1 = Parede, 0 = Caminho, 2 = Saída)
     const mapa = [
@@ -198,38 +212,22 @@
     let jogoAtivo = false;
     let offsetAngulo = null;
 
-    // Redimensionamento
-    function redimensionar() {
-      canvas.width = LARGURA_INTERNA;
-      canvas.height = ALTURA_INTERNA;
-      checarOrientacao();
-    }
-    window.addEventListener("resize", redimensionar);
-
-    function checarOrientacao() {
-      if (window.innerWidth > window.innerHeight) {
-        if (jogoAtivo) overlayOrientacao.classList.add("oculto");
-      } else {
-        overlayOrientacao.classList.remove("oculto");
-      }
-    }
-
-    // Leitura 360° da Bússola / Yaw do usuário (compatível com iOS e Android)
+    // Leitura 360° no próprio eixo (vertical ou qualquer orientação)
     function obterAnguloBussola(e) {
       let graus = 0;
 
-      // 1. iOS: webkitCompassHeading (0-360° em sentido horário a partir do Norte)
+      // 1. iOS: webkitCompassHeading
       if (typeof e.webkitCompassHeading !== "undefined" && e.webkitCompassHeading !== null) {
         graus = e.webkitCompassHeading;
       } 
-      // 2. Android / Chrome: alpha (0-360°, invertido para coincidir com sentido horário)
+      // 2. Android: alpha padrão W3C
       else if (e.alpha !== null && typeof e.alpha !== "undefined") {
         graus = (360 - e.alpha);
       } else {
         return null;
       }
 
-      // 3. Compensar a rotação física da tela no modo paisagem
+      // Compensação caso o usuário gire a tela em qualquer posição
       const orientacaoTela = window.screen?.orientation?.angle ?? window.orientation ?? 0;
       graus = (graus + orientacaoTela) % 360;
 
@@ -242,17 +240,15 @@
       const anguloReal = obterAnguloBussola(e);
       if (anguloReal === null) return;
 
-      // Calibração: a direção que o usuário estiver olhando no instante em que entra
-      // se torna a "frente" inicial do corredor
+      // Calibração: onde você estiver olhando ao clicar "Entrar" vira a frente
       if (offsetAngulo === null) {
         offsetAngulo = anguloReal - ANGULO_INICIAL;
       }
 
-      // Rastreamento 1:1 do giro do corpo
       jogador.ang = anguloReal - offsetAngulo;
     }
 
-    // Permissão para sensores (iOS 13+) e ativação
+    // Permissão para sensores (iOS 13+) e início
     btnIniciar.addEventListener("click", async () => {
       offsetAngulo = null;
 
@@ -269,8 +265,8 @@
         window.addEventListener("deviceorientation", lidarOrientacao);
       }
 
+      telaInicio.classList.add("oculto");
       jogoAtivo = true;
-      checarOrientacao();
     });
 
     // Controles de Toque (Pointer Events)
@@ -300,7 +296,7 @@
       return obterTipoBloco(px, py) === 1;
     }
 
-    // Raycasting com detecção de tipo de parede
+    // Raycasting
     function raio(angulo) {
       const c = Math.cos(angulo);
       const s = Math.sin(angulo);
@@ -330,7 +326,6 @@
           jogador.y += dy;
         }
 
-        // Checar chegada à saída (bloco 2)
         if (obterTipoBloco(jogador.x, jogador.y) === 2) {
           telaVitoria.classList.add("visivel");
           jogoAtivo = false;
@@ -339,15 +334,17 @@
     }
 
     function renderizar() {
+      const meioY = alturaInterna / 2;
+
       // 1. Teto e Chão
       ctx.fillStyle = "#12131a";
-      ctx.fillRect(0, 0, LARGURA_INTERNA, ALTURA_INTERNA / 2);
+      ctx.fillRect(0, 0, larguraInterna, meioY);
       ctx.fillStyle = "#3e2723";
-      ctx.fillRect(0, ALTURA_INTERNA / 2, LARGURA_INTERNA, ALTURA_INTERNA / 2);
+      ctx.fillRect(0, meioY, larguraInterna, meioY);
 
-      // 2. Colunas de Raycasting
-      for (let i = 0; i < COLUNAS; i++) {
-        const a = jogador.ang - FOV / 2 + (FOV * i) / COLUNAS;
+      // 2. Colunas de Parede
+      for (let i = 0; i < colunas; i++) {
+        const a = jogador.ang - FOV / 2 + (FOV * i) / colunas;
         const hit = raio(a);
         const d = hit.distancia;
         const tipoBloco = hit.tipo;
@@ -362,31 +359,30 @@
           luz *= 0.72; // Sombra na aresta vertical
         }
 
-        // Cor por tipo de bloco (1 = parede de pedra, 2 = saída dourada/esmeralda)
         let r, g, b;
         if (tipoBloco === 2) {
-          // Saída destacada em tom esmeralda / dourado
+          // Saída verde esmeralda luminoso
           r = Math.floor(luz * 0.4);
-          g = Math.floor(luz * 1.1);
+          g = Math.floor(luz * 1.15);
           b = Math.floor(luz * 0.6);
         } else {
-          // Parede padrão
+          // Parede de tijolo/pedra
           r = Math.floor(luz);
           g = Math.floor(luz * 0.88);
           b = Math.floor(luz * 0.75);
         }
 
-        const h = Math.min(ALTURA_INTERNA, Math.floor(ALTURA_INTERNA / dCorrigida));
-        const yTop = (ALTURA_INTERNA - h) / 2;
+        const h = Math.min(alturaInterna, Math.floor(alturaInterna / dCorrigida));
+        const yTop = (alturaInterna - h) / 2;
 
         ctx.fillStyle = `rgb(${r},${g},${b})`;
-        ctx.fillRect(i * L, yTop, L + 0.5, h);
+        ctx.fillRect(i * larguraColuna, yTop, larguraColuna + 0.5, h);
       }
 
       // Retículo central
-      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
       ctx.beginPath();
-      ctx.arc(LARGURA_INTERNA / 2, ALTURA_INTERNA / 2, 1.5, 0, Math.PI * 2);
+      ctx.arc(larguraInterna / 2, alturaInterna / 2, 1.5, 0, Math.PI * 2);
       ctx.fill();
     }
 
