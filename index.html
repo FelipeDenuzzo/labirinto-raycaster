@@ -51,7 +51,8 @@
       font-weight: 600;
       letter-spacing: 0.5px;
       z-index: 20;
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: pointer;
       padding: 8px 14px;
       background: rgba(15, 23, 42, 0.7);
       backdrop-filter: blur(10px);
@@ -211,6 +212,28 @@
     .btn-secundario:active {
       background: rgba(255, 255, 255, 0.25);
       border-color: #fff;
+    }
+
+    .btn-modo-pill {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 20px;
+      padding: 7px 13px;
+      color: #e2e8f0;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .btn-modo-pill.ativo {
+      background: #38bdf8;
+      border-color: #38bdf8;
+      color: #042f2e;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.45);
+    }
+    .btn-modo-pill:active {
+      transform: scale(0.96);
     }
 
     /* Modal do Administrador */
@@ -433,9 +456,22 @@
   <div id="tela-inicio">
     <div class="icone-compass">🧭</div>
     <h2 style="font-size: 1.8rem; margin-bottom: 6px;">Labirinto Raycaster 3D</h2>
-    <p id="desc-modo-inicio" style="color: #cbd5e1; max-width: 310px; line-height: 1.4; font-size: 0.95rem;">
-      Fique em pé ou sentado e <strong>gire no próprio eixo</strong> para olhar ao redor. Segure o botão para andar.
+
+    <!-- Seletor Rápido de Controles -->
+    <div style="display: flex; gap: 8px; margin: 10px 0 6px 0; justify-content: center; flex-wrap: wrap;">
+      <button type="button" class="btn-modo-pill ativo" id="inicio-modo-giro-btn">🧭 Giroscópio 360°</button>
+      <button type="button" class="btn-modo-pill" id="inicio-modo-arrastar-btn">👆 Arrastar</button>
+      <button type="button" class="btn-modo-pill" id="inicio-modo-botoes-btn">🕹️ Botões</button>
+    </div>
+
+    <p id="desc-modo-inicio" style="color: #cbd5e1; max-width: 320px; line-height: 1.4; font-size: 0.92rem; margin: 6px 0 10px 0;">
+      Fique em pé ou sentado e <strong>gire no próprio eixo</strong> para olhar ao redor. Segure o botão para andar (ou arraste na tela para ajustar a visão).
     </p>
+
+    <div id="aviso-https-inicio" style="display: none; background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; border-radius: 12px; padding: 8px 12px; color: #fde68a; font-size: 0.82rem; max-width: 330px; margin-bottom: 10px; line-height: 1.35;">
+      ⚠️ Sensores de movimento bloqueados em HTTP. Acesse via HTTPS para liberar o giroscópio ou use o modo <strong>Arrastar</strong>!
+    </div>
+
     <button class="btn-acao" id="btn-iniciar">ENTRAR NO LABIRINTO</button>
     <button class="btn-secundario" id="btn-abrir-admin">⚙️ CARREGAR LABIRINTO (ADMIN)</button>
   </div>
@@ -523,6 +559,10 @@
     const telaVitoria = document.getElementById("tela-vitoria");
     const hudInfo = document.getElementById("hud-info");
     const descModoInicio = document.getElementById("desc-modo-inicio");
+    const inicioModoGiroBtn = document.getElementById("inicio-modo-giro-btn");
+    const inicioModoArrastarBtn = document.getElementById("inicio-modo-arrastar-btn");
+    const inicioModoBotoesBtn = document.getElementById("inicio-modo-botoes-btn");
+    const avisoHttpsInicio = document.getElementById("aviso-https-inicio");
 
     // Referências DOM Admin
     const modalAdmin = document.getElementById("modal-admin");
@@ -573,7 +613,11 @@
 
     let jogoAtivo = false;
     let offsetAngulo = null;
+    let anguloAlvoGiroscopio = null;
     let orientacaoAtiva = false;
+    let leiturasOrientacaoRecebidas = 0;
+    let tempoInicioJogo = 0;
+    let modoControleSelecionado = 'giroscopio';
 
     // Resolução interna do Raycaster
     let larguraInterna = 240;
@@ -600,7 +644,35 @@
       window.visualViewport.addEventListener("resize", redimensionar);
     }
 
-    // Configuração dos Controles por Fase
+    // Sincronização e Configuração dos Controles por Modo
+    function selecionarModoUI(modo) {
+      modoControleSelecionado = modo;
+
+      if (inicioModoGiroBtn && inicioModoArrastarBtn && inicioModoBotoesBtn) {
+        inicioModoGiroBtn.classList.toggle("ativo", modo === 'giroscopio');
+        inicioModoArrastarBtn.classList.toggle("ativo", modo === 'arrastar');
+        inicioModoBotoesBtn.classList.toggle("ativo", modo === 'botoes');
+      }
+
+      if (modoGiroBtn && modoArrastarBtn && modoBotoesBtn) {
+        modoGiroBtn.classList.toggle("ativo", modo === 'giroscopio');
+        modoArrastarBtn.classList.toggle("ativo", modo === 'arrastar');
+        modoBotoesBtn.classList.toggle("ativo", modo === 'botoes');
+      }
+
+      aplicarModoControle(modo);
+    }
+
+    if (inicioModoGiroBtn) {
+      inicioModoGiroBtn.addEventListener("click", () => selecionarModoUI('giroscopio'));
+    }
+    if (inicioModoArrastarBtn) {
+      inicioModoArrastarBtn.addEventListener("click", () => selecionarModoUI('arrastar'));
+    }
+    if (inicioModoBotoesBtn) {
+      inicioModoBotoesBtn.addEventListener("click", () => selecionarModoUI('botoes'));
+    }
+
     function aplicarModoControle(modo) {
       gerenciadorControles.definirModo(modo);
 
@@ -608,36 +680,66 @@
         controlesBotoes.style.display = 'none';
         botaoAvancar.style.display = 'block';
         hudInfo.textContent = "Gire o corpo 360° para olhar";
-        descModoInicio.innerHTML = "Fique em pé ou sentado e <strong>gire no próprio eixo</strong> para olhar ao redor. Segure o botão para andar.";
+        descModoInicio.innerHTML = "Fique em pé ou sentado e <strong>gire no próprio eixo</strong> para olhar ao redor. Segure o botão para andar (ou arraste na tela).";
         gerenciadorControles.vincularBotoes(botaoAvancar, null, null);
       } else if (modo === 'arrastar') {
         controlesBotoes.style.display = 'none';
         botaoAvancar.style.display = 'none';
         hudInfo.textContent = "Arraste para cima para andar, lados para girar";
-        descModoInicio.innerHTML = "Toque na tela e <strong>arraste para cima para andar</strong> e <strong>para os lados para girar</strong>.";
+        descModoInicio.innerHTML = "Toque na tela e <strong>arraste para cima para andar</strong> e <strong>para os lados para girar</strong> com controle suave.";
         gerenciadorControles.vincularArraste(canvas, joystickIndicador, joystickPonto);
       } else {
         controlesBotoes.style.display = 'flex';
         botaoAvancar.style.display = 'none';
         hudInfo.textContent = "Use os botões na tela para navegar";
-        descModoInicio.innerHTML = "Use os <strong>botões na tela</strong> para girar a visão e avançar pelo labirinto.";
+        descModoInicio.innerHTML = "Use os <strong>botões na tela</strong> (↺ virar, ⬆ avançar, ↻ virar) para navegar pelo labirinto.";
         gerenciadorControles.vincularBotoes(btnAvancarBotoes, btnGirarEsq, btnGirarDir);
       }
     }
 
-    // Leitura 360° Giroscópio
+    // Leitura 360° Giroscópio com compensação de inclinação (tilt compensation W3C)
     function obterAnguloBussola(e) {
-      let graus = 0;
+      let graus = null;
+
+      // 1. iOS Safari (fornece a bússola calibrada pelo sistema operacional)
       if (typeof e.webkitCompassHeading !== "undefined" && e.webkitCompassHeading !== null) {
         graus = e.webkitCompassHeading;
       } else if (e.alpha !== null && typeof e.alpha !== "undefined") {
-        graus = (360 - e.alpha);
-      } else {
-        return null;
+        // 2. Android / Chrome com sensor fusion e compensação de inclinação
+        if (e.beta !== null && typeof e.beta !== "undefined" && e.gamma !== null && typeof e.gamma !== "undefined") {
+          const degToRad = Math.PI / 180;
+          const a = e.alpha * degToRad;
+          const b = e.beta * degToRad;
+          const g = e.gamma * degToRad;
+
+          const cA = Math.cos(a), sA = Math.sin(a);
+          const cB = Math.cos(b), sB = Math.sin(b);
+          const cG = Math.cos(g), sG = Math.sin(g);
+
+          // Componentes vetoriais projetados no plano horizontal da Terra (W3C Standard)
+          const rA = -cA * sG - sA * sB * cG;
+          const rB = -sA * sG + cA * sB * cG;
+
+          let compass = Math.atan2(rA, rB);
+          if (compass < 0) compass += 2 * Math.PI;
+          graus = compass * (180 / Math.PI);
+        } else {
+          graus = (360 - e.alpha);
+        }
       }
+
+      if (graus === null || isNaN(graus)) return null;
+
       const orientacaoTela = window.screen?.orientation?.angle ?? window.orientation ?? 0;
       graus = (graus + orientacaoTela) % 360;
       return (graus * Math.PI) / 180;
+    }
+
+    function menorDistanciaAngular(alvo, atual) {
+      let diff = (alvo - atual) % (Math.PI * 2);
+      if (diff < -Math.PI) diff += Math.PI * 2;
+      if (diff > Math.PI) diff -= Math.PI * 2;
+      return diff;
     }
 
     function lidarOrientacao(e) {
@@ -645,38 +747,98 @@
       const anguloReal = obterAnguloBussola(e);
       if (anguloReal === null) return;
 
+      leiturasOrientacaoRecebidas++;
+
       if (offsetAngulo === null) {
         offsetAngulo = anguloReal - spawnInicial.ang;
       }
-      jogador.ang = anguloReal - offsetAngulo;
+      anguloAlvoGiroscopio = anguloReal - offsetAngulo;
     }
 
     async function ativarSensoresOrientacao() {
-      if (orientacaoAtiva) return;
+      if (orientacaoAtiva) return true;
+
+      const vincularEventos = () => {
+        window.addEventListener("deviceorientationabsolute", lidarOrientacao, { passive: true });
+        window.addEventListener("deviceorientation", lidarOrientacao, { passive: true });
+        orientacaoAtiva = true;
+      };
+
       if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         try {
           const permissao = await DeviceOrientationEvent.requestPermission();
           if (permissao === 'granted') {
-            window.addEventListener("deviceorientation", lidarOrientacao);
-            orientacaoAtiva = true;
+            vincularEventos();
+            return true;
+          } else {
+            console.warn("Permissão de giroscópio recusada:", permissao);
+            return false;
           }
         } catch (err) {
-          console.warn("Permissão de orientação recusada:", err);
+          console.warn("Erro ao solicitar permissão de giroscópio:", err);
+          return false;
         }
       } else {
-        window.addEventListener("deviceorientation", lidarOrientacao);
-        orientacaoAtiva = true;
+        vincularEventos();
+        return true;
       }
     }
 
+    // No modo giroscópio, permite deslizar o dedo horizontalmente na tela para girar ou recentralizar a visão
+    let gyroTouchStartX = null;
+    canvas.addEventListener('pointerdown', (e) => {
+      if (gerenciadorControles.modo === 'giroscopio') {
+        gyroTouchStartX = e.clientX;
+        if (!orientacaoAtiva) {
+          ativarSensoresOrientacao();
+        }
+      }
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (gerenciadorControles.modo === 'giroscopio' && gyroTouchStartX !== null) {
+        const dx = e.clientX - gyroTouchStartX;
+        gyroTouchStartX = e.clientX;
+        if (offsetAngulo !== null) {
+          offsetAngulo -= dx * 0.006;
+        } else {
+          jogador.ang += dx * 0.006;
+        }
+      }
+    });
+    const finalizarGyroTouch = () => { gyroTouchStartX = null; };
+    window.addEventListener('pointerup', finalizarGyroTouch);
+    window.addEventListener('pointercancel', finalizarGyroTouch);
+
+    botaoAvancar.addEventListener('pointerdown', () => {
+      if (gerenciadorControles.modo === 'giroscopio' && !orientacaoAtiva) {
+        ativarSensoresOrientacao();
+      }
+    });
+
+    hudInfo.addEventListener("click", () => {
+      if (gerenciadorControles.modo === 'giroscopio' && leiturasOrientacaoRecebidas <= 3) {
+        selecionarModoUI('arrastar');
+      }
+    });
+
     // Início de Partida
-    btnIniciar.addEventListener("click", async () => {
+    const iniciarPartida = async () => {
       offsetAngulo = null;
+      anguloAlvoGiroscopio = null;
+      leiturasOrientacaoRecebidas = 0;
+      tempoInicioJogo = performance.now();
+
       if (gerenciadorControles.modo === 'giroscopio') {
         await ativarSensoresOrientacao();
       }
       telaInicio.classList.add("oculto");
       jogoAtivo = true;
+    };
+    btnIniciar.addEventListener("click", iniciarPartida);
+    btnIniciar.addEventListener("touchend", () => {
+      if (gerenciadorControles.modo === 'giroscopio' && !orientacaoAtiva) {
+        ativarSensoresOrientacao();
+      }
     });
 
     // Colisão do Raycaster
@@ -715,6 +877,27 @@
       // Rotação via botões ou arraste na tela
       if (gerenciadorControles.modo === 'botoes' || gerenciadorControles.modo === 'arrastar') {
         jogador.ang = gerenciadorControles.atualizarAnguloJogador(jogador.ang, 1.0, 0.045);
+      }
+
+      // Rotação Giroscópio com interpolação suave (elimina ruído e tremores)
+      if (gerenciadorControles.modo === 'giroscopio') {
+        if (anguloAlvoGiroscopio !== null) {
+          const diff = menorDistanciaAngular(anguloAlvoGiroscopio, jogador.ang);
+          jogador.ang += diff * 0.35;
+        }
+
+        // Monitoramento de saúde dos sensores com aviso amigável
+        if (jogoAtivo) {
+          if (leiturasOrientacaoRecebidas > 3) {
+            hudInfo.textContent = "Gire o corpo 360° para olhar [Sensor OK]";
+          } else if (performance.now() - tempoInicioJogo > 1500) {
+            if (!window.isSecureContext) {
+              hudInfo.innerHTML = "⚠️ Giroscópio bloqueado em HTTP. <span style='color:#38bdf8;text-decoration:underline;'>Toque para modo Arrastar</span>";
+            } else {
+              hudInfo.innerHTML = "⚠️ Sensor inativo. Arraste na tela para girar ou <span style='color:#38bdf8;text-decoration:underline;'>toque para Arrastar</span>";
+            }
+          }
+        }
       }
 
       // Avanço
@@ -822,7 +1005,6 @@
     let gradeAdmin = null;
     let pontoInicioAdmin = null;
     let pontoSaidaAdmin = null;
-    let modoControleSelecionado = 'giroscopio';
 
     function abrirModalAdmin() {
       modalAdmin.classList.add("visivel");
@@ -843,22 +1025,13 @@
 
     // Seleção de Modo no Admin
     modoGiroBtn.addEventListener("click", () => {
-      modoControleSelecionado = 'giroscopio';
-      modoGiroBtn.classList.add("ativo");
-      modoArrastarBtn.classList.remove("ativo");
-      modoBotoesBtn.classList.remove("ativo");
+      selecionarModoUI('giroscopio');
     });
     modoArrastarBtn.addEventListener("click", () => {
-      modoControleSelecionado = 'arrastar';
-      modoArrastarBtn.classList.add("ativo");
-      modoGiroBtn.classList.remove("ativo");
-      modoBotoesBtn.classList.remove("ativo");
+      selecionarModoUI('arrastar');
     });
     modoBotoesBtn.addEventListener("click", () => {
-      modoControleSelecionado = 'botoes';
-      modoBotoesBtn.classList.add("ativo");
-      modoGiroBtn.classList.remove("ativo");
-      modoArrastarBtn.classList.remove("ativo");
+      selecionarModoUI('botoes');
     });
 
     // Slider de Resolução
@@ -1071,6 +1244,9 @@
       jogador.y = spawnInicial.y;
       jogador.ang = spawnInicial.ang;
       offsetAngulo = null;
+      anguloAlvoGiroscopio = null;
+      leiturasOrientacaoRecebidas = 0;
+      tempoInicioJogo = performance.now();
 
       if (modoControleSelecionado === 'giroscopio') {
         await ativarSensoresOrientacao();
@@ -1080,7 +1256,10 @@
     });
 
     // Inicialização
-    aplicarModoControle('giroscopio');
+    if (!window.isSecureContext && avisoHttpsInicio) {
+      avisoHttpsInicio.style.display = "block";
+    }
+    selecionarModoUI('giroscopio');
     redimensionar();
     loop();
   </script>

@@ -20,7 +20,9 @@
       this.avancando = false;
       this.girandoEsquerda = false;
       this.girandoDireita = false;
-      this.intensidadeGiro = 1.0;
+      this.intensidadeGiro = 0;
+      this.intensidadeGiroAlvo = 0;
+      this.intensidadeGiroSuave = 0;
       this._listeners = [];
       this.origemArraste = null;
     }
@@ -59,18 +61,19 @@
 
     /**
      * Processa deslocamento do dedo (deltaX, deltaY) em pixels.
+     * Resposta densa e firme com deadzone ampliada para evitar giros indesejados ao avançar.
      * - deltaY negativo (arrastar para cima) => Avançar
      * - deltaX positivo (arrastar para direita) => Girar Direita
      * - deltaX negativo (arrastar para esquerda) => Girar Esquerda
      *
      * @param {number} deltaX
      * @param {number} deltaY
-     * @param {number} [deadzone=18] - Raio neutro aumentado para dar firmeza e evitar tremores
+     * @param {number} [deadzone=26] - Raio neutro ampliado para estabilidade tátil
      */
-    processarVetorArraste(deltaX, deltaY, deadzone = 18) {
+    processarVetorArraste(deltaX, deltaY, deadzone = 26) {
       if (this.modo !== 'arrastar') return;
 
-      // Avançar ao puxar para cima (com curso firme)
+      // Avançar ao puxar para cima (curso firme e deliberado)
       if (deltaY < -deadzone) {
         this.avancando = true;
       } else {
@@ -80,10 +83,10 @@
       // Girar para os lados com resposta densa, ponderada e progressiva
       const absX = Math.abs(deltaX);
       if (absX > deadzone) {
-        // Normaliza de 0 a 1 ao longo de um deslocamento suave de 60px
-        const progresso = Math.min(1.0, (absX - deadzone) / 55);
-        // Curva exponencial suave (evita solavancos bruscos, resposta muito mais densa)
-        const intensidade = Math.pow(progresso, 1.25) * 0.85;
+        // Normaliza de 0 a 1 ao longo de um deslocamento amplo de 85px
+        const progresso = Math.min(1.0, (absX - deadzone) / 85);
+        // Curva exponencial 1.7 (firme e densa nas micro-correções, aceleração gradual)
+        const intensidade = Math.pow(progresso, 1.7) * 0.65;
 
         if (deltaX > 0) {
           this.girandoDireita = true;
@@ -92,10 +95,12 @@
           this.girandoEsquerda = true;
           this.girandoDireita = false;
         }
+        this.intensidadeGiroAlvo = intensidade;
         this.intensidadeGiro = intensidade;
       } else {
         this.girandoDireita = false;
         this.girandoEsquerda = false;
+        this.intensidadeGiroAlvo = 0;
         this.intensidadeGiro = 0;
       }
     }
@@ -107,6 +112,8 @@
       this.avancando = false;
       this.girandoEsquerda = false;
       this.girandoDireita = false;
+      this.intensidadeGiroAlvo = 0;
+      this.intensidadeGiroSuave = 0;
       this.intensidadeGiro = 0;
       this.origemArraste = null;
     }
@@ -126,8 +133,14 @@
       }
 
       let ang = anguloAtual;
-      // No modo arrastar, aplica velocidade angular mais densa e ponderada
-      const velBase = (this.modo === 'arrastar') ? 0.036 : velocidadeGiro;
+      // No modo arrastar, aplica velocidade angular significativamente mais densa (0.024)
+      const velBase = (this.modo === 'arrastar') ? 0.024 : velocidadeGiro;
+
+      if (this.modo === 'arrastar') {
+        this.intensidadeGiroSuave += (this.intensidadeGiroAlvo - this.intensidadeGiroSuave) * 0.25;
+        this.intensidadeGiro = this.intensidadeGiroSuave;
+      }
+
       const mult = (this.modo === 'arrastar') ? (this.intensidadeGiro || 0) : 1.0;
 
       if (this.girandoEsquerda) {
