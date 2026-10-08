@@ -226,7 +226,7 @@
       display: none;
       flex-direction: column;
       align-items: center;
-      padding: max(12px, env(safe-area-inset-top, 12px)) max(12px, env(safe-area-inset-right, 12px)) max(24px, calc(env(safe-area-inset-bottom, 0px) + 20px)) max(12px, env(safe-area-inset-left, 12px));
+      padding: max(10px, env(safe-area-inset-top, 10px)) 12px calc(110px + env(safe-area-inset-bottom, 20px)) 12px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       color: #f8fafc;
@@ -236,37 +236,38 @@
     }
     .modal-card {
       width: 100%;
-      max-width: 480px;
+      max-width: 440px;
       background: rgba(30, 41, 59, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
-      padding: 18px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .modal-cabecalho {
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 10px;
+      padding-bottom: 8px;
     }
     .btn-fechar {
       background: none;
       border: none;
       color: #94a3b8;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       cursor: pointer;
       line-height: 1;
+      padding: 4px;
     }
     .upload-box {
       border: 2px dashed rgba(56, 189, 248, 0.5);
       background: rgba(15, 23, 42, 0.5);
-      border-radius: 14px;
-      padding: 16px;
+      border-radius: 12px;
+      padding: 10px 14px;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.15s, background 0.15s;
@@ -278,10 +279,10 @@
     .seletor-grupo {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
     .seletor-titulo {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: #94a3b8;
       font-weight: 600;
       text-transform: uppercase;
@@ -293,8 +294,8 @@
       gap: 8px;
     }
     .btn-modo {
-      padding: 10px 8px;
-      font-size: 0.85rem;
+      padding: 8px 6px;
+      font-size: 0.82rem;
       border: 1px solid rgba(255, 255, 255, 0.2);
       background: rgba(15, 23, 42, 0.6);
       color: #cbd5e1;
@@ -314,17 +315,17 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: rgba(15, 23, 42, 0.7);
-      padding: 12px;
+      padding: 10px;
       border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
     #canvas-preview {
-      width: min(220px, 60vw);
-      height: min(220px, 60vw);
-      max-width: 220px;
-      max-height: 220px;
+      width: min(190px, 50vw);
+      height: min(190px, 50vw);
+      max-width: 190px;
+      max-height: 190px;
       background: #000;
       border-radius: 8px;
       cursor: crosshair;
@@ -332,15 +333,22 @@
       image-rendering: pixelated;
     }
     .preview-legenda {
-      font-size: 0.8rem;
-      color: #cbd5e1;
-      line-height: 1.4;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      line-height: 1.3;
       text-align: center;
     }
     .preview-status {
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 0.82rem;
+      font-weight: 700;
       color: #38bdf8;
+    }
+    .modal-rodape-acoes {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     /* Tela de Vitória */
@@ -436,9 +444,9 @@
       </div>
 
       <!-- Ações do Modal -->
-      <div style="display: flex; gap: 8px;">
-        <button class="btn-secundario" id="btn-reset-pontos" style="flex: 1; margin: 0;">Limpar Pontos</button>
-        <button class="btn-acao" id="btn-jogar-custom" style="flex: 2; margin: 0; padding: 12px 18px;" disabled>▶️ JOGAR ESTA FASE</button>
+      <div class="modal-rodape-acoes">
+        <button class="btn-secundario" id="btn-reset-pontos" style="flex: 1; margin: 0; min-height: 48px;">Limpar</button>
+        <button class="btn-acao" id="btn-jogar-custom" style="flex: 2; margin: 0; padding: 10px 14px; min-height: 48px;" disabled>▶️ JOGAR ESTA FASE</button>
       </div>
     </div>
   </div>
