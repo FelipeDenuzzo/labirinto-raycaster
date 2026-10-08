@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Labirinto Raycaster 360 Mobile</title>
+  <title>Labirinto Raycaster 3D Mobile</title>
   <style>
     * {
       box-sizing: border-box;
@@ -18,7 +18,7 @@
       height: 100%;
       background-color: #0b0c10;
       overflow: hidden;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     #tela-jogo {
       position: absolute;
@@ -29,13 +29,117 @@
       display: block;
       image-rendering: pixelated;
     }
+
+    /* HUD Superior */
+    #hud-info {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      z-index: 20;
+      pointer-events: none;
+      padding: 8px 16px;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Botão Único (Modo Giroscópio) */
+    #botao-avancar {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      border-radius: 32px;
+      color: #fff;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      backdrop-filter: blur(14px);
+      z-index: 25;
+      outline: none;
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
+      transition: background 0.15s, transform 0.1s, border-color 0.15s;
+    }
+    #botao-avancar:active, #botao-avancar.pressionado {
+      background: rgba(74, 222, 128, 0.45);
+      border-color: #4ade80;
+      transform: translateX(-50%) scale(0.95);
+    }
+
+    /* Barra de 3 Botões (Modo Botões na Tela) */
+    #controles-botoes {
+      position: absolute;
+      bottom: 24px;
+      left: 0;
+      width: 100%;
+      display: none; /* Ativado via JS no modo botoes */
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 25;
+      pointer-events: none;
+    }
+    .btn-controle {
+      pointer-events: auto;
+      touch-action: none;
+      background: rgba(15, 23, 42, 0.75);
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-radius: 28px;
+      color: #fff;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      transition: background 0.12s, transform 0.08s, border-color 0.12s;
+    }
+    .btn-girar {
+      width: 68px;
+      height: 68px;
+      font-size: 1.8rem;
+    }
+    .btn-avancar-centro {
+      height: 68px;
+      padding: 0 28px;
+      font-size: 1.15rem;
+      letter-spacing: 1.5px;
+      border-radius: 34px;
+      background: rgba(30, 41, 59, 0.85);
+    }
+    .btn-controle:active, .btn-controle.pressionado {
+      background: rgba(56, 189, 248, 0.5);
+      border-color: #38bdf8;
+      transform: scale(0.94);
+    }
+    .btn-avancar-centro:active, .btn-avancar-centro.pressionado {
+      background: rgba(74, 222, 128, 0.5);
+      border-color: #4ade80;
+    }
+
+    /* Tela Inicial */
     #tela-inicio {
       position: absolute;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(10, 12, 18, 0.95);
+      background: radial-gradient(circle at center, rgba(30, 41, 59, 0.95) 0%, rgba(10, 12, 18, 0.98) 100%);
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -44,80 +148,24 @@
       z-index: 50;
       text-align: center;
       padding: 24px;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
     }
     #tela-inicio.oculto {
       display: none;
     }
     .icone-compass {
-      font-size: 3.5rem;
-      margin-bottom: 1.2rem;
-      animation: flutuar 2.5s infinite ease-in-out;
+      font-size: 3.6rem;
+      margin-bottom: 1rem;
+      animation: flutuar 2.6s infinite ease-in-out;
     }
     @keyframes flutuar {
       0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-8px) rotate(10deg); }
+      50% { transform: translateY(-7px) rotate(8deg); }
     }
-    #botao-avancar {
-      position: absolute;
-      bottom: 36px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 240px;
-      height: 66px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.5);
-      border-radius: 33px;
-      color: #fff;
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      backdrop-filter: blur(12px);
-      z-index: 10;
-      outline: none;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
-      transition: background 0.15s, transform 0.1s;
-    }
-    #botao-avancar:active, #botao-avancar.pressionado {
-      background: rgba(255, 255, 255, 0.45);
-      border-color: #fff;
-      transform: translateX(-50%) scale(0.96);
-    }
-    #hud-info {
-      position: absolute;
-      top: 20px;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      color: rgba(255, 255, 255, 0.75);
-      font-size: 0.9rem;
-      letter-spacing: 1px;
-      z-index: 10;
-      pointer-events: none;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-    }
-    #tela-vitoria {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.9);
-      color: #fff;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 60;
-      text-align: center;
-      padding: 24px;
-      backdrop-filter: blur(14px);
-    }
-    #tela-vitoria.visivel {
-      display: flex;
-    }
+
+    /* Botões Gerais de Ação */
     .btn-acao {
-      margin-top: 20px;
+      margin-top: 14px;
       padding: 16px 36px;
       font-size: 1.1rem;
       background: #4ade80;
@@ -128,10 +176,176 @@
       letter-spacing: 1px;
       cursor: pointer;
       box-shadow: 0 8px 24px rgba(74, 222, 128, 0.35);
-      transition: transform 0.1s;
+      transition: transform 0.1s, background 0.15s;
     }
     .btn-acao:active {
       transform: scale(0.96);
+    }
+    .btn-secundario {
+      margin-top: 12px;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      background: rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-secundario:active {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: #fff;
+    }
+
+    /* Modal do Administrador */
+    #modal-admin {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(11, 15, 25, 0.92);
+      backdrop-filter: blur(18px);
+      z-index: 60;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px;
+      overflow-y: auto;
+      color: #f8fafc;
+    }
+    #modal-admin.visivel {
+      display: flex;
+    }
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    }
+    .modal-cabecalho {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 10px;
+    }
+    .btn-fechar {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .upload-box {
+      border: 2px dashed rgba(56, 189, 248, 0.5);
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .upload-box:hover {
+      border-color: #38bdf8;
+      background: rgba(15, 23, 42, 0.8);
+    }
+    .seletor-grupo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .seletor-titulo {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .opcoes-modo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-modo {
+      padding: 10px 8px;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(15, 23, 42, 0.6);
+      color: #cbd5e1;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .btn-modo.ativo {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+    .preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    #canvas-preview {
+      width: 240px;
+      height: 240px;
+      background: #000;
+      border-radius: 8px;
+      cursor: crosshair;
+      touch-action: none;
+      image-rendering: pixelated;
+    }
+    .preview-legenda {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+      text-align: center;
+    }
+    .preview-status {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    /* Tela de Vitória */
+    #tela-vitoria {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.92);
+      color: #fff;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 70;
+      text-align: center;
+      padding: 24px;
+      backdrop-filter: blur(16px);
+    }
+    #tela-vitoria.visivel {
+      display: flex;
     }
   </style>
 </head>
@@ -141,52 +355,127 @@
 
   <div id="hud-info">Gire o corpo 360° para olhar</div>
 
+  <!-- Controles da Fase -->
+  <button id="botao-avancar">AVANÇAR</button>
+
+  <div id="controles-botoes">
+    <button class="btn-controle btn-girar" id="btn-girar-esq">↺</button>
+    <button class="btn-controle btn-avancar-centro" id="btn-avancar-botoes">⬆ AVANÇAR</button>
+    <button class="btn-controle btn-girar" id="btn-girar-dir">↻</button>
+  </div>
+
+  <!-- Tela Inicial -->
   <div id="tela-inicio">
     <div class="icone-compass">🧭</div>
-    <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Labirinto 360°</h2>
-    <p style="color: #cbd5e1; max-width: 300px; line-height: 1.5; font-size: 1rem;">
+    <h2 style="font-size: 1.8rem; margin-bottom: 6px;">Labirinto Raycaster 3D</h2>
+    <p id="desc-modo-inicio" style="color: #cbd5e1; max-width: 310px; line-height: 1.4; font-size: 0.95rem;">
       Fique em pé ou sentado e <strong>gire no próprio eixo</strong> para olhar ao redor. Segure o botão para andar.
     </p>
     <button class="btn-acao" id="btn-iniciar">ENTRAR NO LABIRINTO</button>
+    <button class="btn-secundario" id="btn-abrir-admin">⚙️ CARREGAR LABIRINTO (ADMIN)</button>
   </div>
 
-  <button id="botao-avancar">AVANÇAR</button>
+  <!-- Modal Admin: Upload & Configuração do Mapa -->
+  <div id="modal-admin">
+    <div class="modal-card">
+      <div class="modal-cabecalho">
+        <h3 style="font-size: 1.15rem; font-weight: 700;">⚙️ Configurar Labirinto</h3>
+        <button class="btn-fechar" id="btn-fechar-admin">✕</button>
+      </div>
 
+      <!-- Upload -->
+      <label class="upload-box" for="input-imagem-labirinto">
+        <span style="font-size: 1.8rem; display: block; margin-bottom: 4px;">🖼️</span>
+        <strong style="color: #38bdf8; font-size: 0.95rem;">Toque para enviar o mapa</strong>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">Imagem com linhas pretas e fundo branco</p>
+        <input type="file" id="input-imagem-labirinto" accept="image/*" style="display: none;">
+      </label>
+
+      <!-- Slider de Resolução -->
+      <div class="seletor-grupo">
+        <div style="display: flex; justify-content: space-between;">
+          <span class="seletor-titulo">Tamanho da Grade</span>
+          <span id="label-tamanho-grade" style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">20 × 20</span>
+        </div>
+        <input type="range" id="slider-tamanho-grade" min="15" max="35" value="20" step="1" style="width: 100%; accent-color: #38bdf8;">
+      </div>
+
+      <!-- Modo de Controle -->
+      <div class="seletor-grupo">
+        <span class="seletor-titulo">Modo de Controle Desta Fase</span>
+        <div class="opcoes-modo">
+          <button type="button" class="btn-modo ativo" id="modo-giro-btn">🧭 Giroscópio 360°</button>
+          <button type="button" class="btn-modo" id="modo-botoes-btn">🕹️ Botões na Tela</button>
+        </div>
+      </div>
+
+      <!-- Preview Interativo -->
+      <div class="preview-container">
+        <canvas id="canvas-preview" width="240" height="240"></canvas>
+        <div class="preview-status" id="preview-status-texto">1º clique: Início (🟢) | 2º clique: Saída (🏁)</div>
+        <div class="preview-legenda">
+          Toque no mapa acima para escolher onde o jogador inicia e onde fica a saída.
+        </div>
+      </div>
+
+      <!-- Ações do Modal -->
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-secundario" id="btn-reset-pontos" style="flex: 1; margin: 0;">Limpar Pontos</button>
+        <button class="btn-acao" id="btn-jogar-custom" style="flex: 2; margin: 0; padding: 12px 18px;" disabled>▶️ JOGAR ESTA FASE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela de Vitória -->
   <div id="tela-vitoria">
     <h2 style="font-size: 2.2rem; color: #4ade80;">Parabéns! 🏆</h2>
-    <p style="color: #cbd5e1; margin-top: 10px; font-size: 1.15rem;">Você encontrou a saída!</p>
-    <button class="btn-acao" onclick="reiniciarJogo()">JOGAR NOVAMENTE</button>
+    <p style="color: #cbd5e1; margin-top: 10px; font-size: 1.15rem;">Você encontrou a saída do labirinto!</p>
+    <button class="btn-acao" id="btn-vitoria-reiniciar">JOGAR NOVAMENTE</button>
+    <button class="btn-secundario" id="btn-vitoria-outro-mapa">⚙️ CARREGAR OUTRO LABIRINTO</button>
   </div>
 
+  <!-- Módulos de Suporte -->
+  <script src="src/maze-parser.js"></script>
+  <script src="src/controls.js"></script>
+
   <script>
+    // Referências DOM Principais
     const canvas = document.getElementById("tela-jogo");
     const ctx = canvas.getContext("2d");
     const botaoAvancar = document.getElementById("botao-avancar");
+    const controlesBotoes = document.getElementById("controles-botoes");
+    const btnGirarEsq = document.getElementById("btn-girar-esq");
+    const btnAvancarBotoes = document.getElementById("btn-avancar-botoes");
+    const btnGirarDir = document.getElementById("btn-girar-dir");
     const telaInicio = document.getElementById("tela-inicio");
     const btnIniciar = document.getElementById("btn-iniciar");
+    const btnAbrirAdmin = document.getElementById("btn-abrir-admin");
     const telaVitoria = document.getElementById("tela-vitoria");
+    const hudInfo = document.getElementById("hud-info");
+    const descModoInicio = document.getElementById("desc-modo-inicio");
 
-    // Resolução interna adaptável ao modo vertical
-    let larguraInterna = 240;
-    let alturaInterna = 360;
-    let colunas = 120;
-    let larguraColuna = larguraInterna / colunas;
-    const FOV = Math.PI / 3; // 60 graus
+    // Referências DOM Admin
+    const modalAdmin = document.getElementById("modal-admin");
+    const btnFecharAdmin = document.getElementById("btn-fechar-admin");
+    const inputImagemLabirinto = document.getElementById("input-imagem-labirinto");
+    const sliderTamanhoGrade = document.getElementById("slider-tamanho-grade");
+    const labelTamanhoGrade = document.getElementById("label-tamanho-grade");
+    const modoGiroBtn = document.getElementById("modo-giro-btn");
+    const modoBotoesBtn = document.getElementById("modo-botoes-btn");
+    const canvasPreview = document.getElementById("canvas-preview");
+    const ctxPreview = canvasPreview.getContext("2d");
+    const previewStatusTexto = document.getElementById("preview-status-texto");
+    const btnResetPontos = document.getElementById("btn-reset-pontos");
+    const btnJogarCustom = document.getElementById("btn-jogar-custom");
+    const btnVitoriaReiniciar = document.getElementById("btn-vitoria-reiniciar");
+    const btnVitoriaOutroMapa = document.getElementById("btn-vitoria-outro-mapa");
 
-    function redimensionar() {
-      const aspecto = window.innerHeight / window.innerWidth;
-      larguraInterna = 240;
-      alturaInterna = Math.round(larguraInterna * aspecto);
-      colunas = 120;
-      larguraColuna = larguraInterna / colunas;
+    // Gerenciador de Controles
+    const gerenciadorControles = new ControlsManager.GerenciadorControles('giroscopio');
+    gerenciadorControles.vincularBotoes(botaoAvancar, null, null);
 
-      canvas.width = larguraInterna;
-      canvas.height = alturaInterna;
-    }
-    window.addEventListener("resize", redimensionar);
-
-    // Matriz do Mapa (1 = Parede, 0 = Caminho, 2 = Saída)
-    const mapa = [
+    // Estado da Fase Atual
+    let mapa = [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
       [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
@@ -201,90 +490,111 @@
     ];
 
     const ANGULO_INICIAL = 0.0;
+    let spawnInicial = { x: 1.5, y: 4.5, ang: ANGULO_INICIAL };
     let jogador = {
-      x: 1.5,
-      y: 4.5,
-      ang: ANGULO_INICIAL,
+      x: spawnInicial.x,
+      y: spawnInicial.y,
+      ang: spawnInicial.ang,
       velocidade: 0.04
     };
 
-    let avancando = false;
     let jogoAtivo = false;
     let offsetAngulo = null;
+    let orientacaoAtiva = false;
 
-    // Leitura 360° no próprio eixo (vertical ou qualquer orientação)
+    // Resolução interna do Raycaster
+    let larguraInterna = 240;
+    let alturaInterna = 360;
+    let colunas = 120;
+    let larguraColuna = larguraInterna / colunas;
+    const FOV = Math.PI / 3;
+
+    function redimensionar() {
+      const aspecto = window.innerHeight / window.innerWidth;
+      larguraInterna = 240;
+      alturaInterna = Math.round(larguraInterna * aspecto);
+      colunas = 120;
+      larguraColuna = larguraInterna / colunas;
+
+      canvas.width = larguraInterna;
+      canvas.height = alturaInterna;
+    }
+    window.addEventListener("resize", redimensionar);
+
+    // Configuração dos Controles por Fase
+    function aplicarModoControle(modo) {
+      gerenciadorControles.definirModo(modo);
+
+      if (modo === 'giroscopio') {
+        controlesBotoes.style.display = 'none';
+        botaoAvancar.style.display = 'block';
+        hudInfo.textContent = "Gire o corpo 360° para olhar";
+        descModoInicio.innerHTML = "Fique em pé ou sentado e <strong>gire no próprio eixo</strong> para olhar ao redor. Segure o botão para andar.";
+        gerenciadorControles.vincularBotoes(botaoAvancar, null, null);
+      } else {
+        controlesBotoes.style.display = 'flex';
+        botaoAvancar.style.display = 'none';
+        hudInfo.textContent = "Use os botões na tela para navegar";
+        descModoInicio.innerHTML = "Use os <strong>botões na tela</strong> para girar a visão e avançar pelo labirinto.";
+        gerenciadorControles.vincularBotoes(btnAvancarBotoes, btnGirarEsq, btnGirarDir);
+      }
+    }
+
+    // Leitura 360° Giroscópio
     function obterAnguloBussola(e) {
       let graus = 0;
-
-      // 1. iOS: webkitCompassHeading
       if (typeof e.webkitCompassHeading !== "undefined" && e.webkitCompassHeading !== null) {
         graus = e.webkitCompassHeading;
-      } 
-      // 2. Android: alpha padrão W3C
-      else if (e.alpha !== null && typeof e.alpha !== "undefined") {
+      } else if (e.alpha !== null && typeof e.alpha !== "undefined") {
         graus = (360 - e.alpha);
       } else {
         return null;
       }
-
-      // Compensação caso o usuário gire a tela em qualquer posição
       const orientacaoTela = window.screen?.orientation?.angle ?? window.orientation ?? 0;
       graus = (graus + orientacaoTela) % 360;
-
       return (graus * Math.PI) / 180;
     }
 
     function lidarOrientacao(e) {
-      if (!jogoAtivo) return;
-
+      if (!jogoAtivo || gerenciadorControles.modo !== 'giroscopio') return;
       const anguloReal = obterAnguloBussola(e);
       if (anguloReal === null) return;
 
-      // Calibração: onde você estiver olhando ao clicar "Entrar" vira a frente
       if (offsetAngulo === null) {
-        offsetAngulo = anguloReal - ANGULO_INICIAL;
+        offsetAngulo = anguloReal - spawnInicial.ang;
       }
-
       jogador.ang = anguloReal - offsetAngulo;
     }
 
-    // Permissão para sensores (iOS 13+) e início
-    btnIniciar.addEventListener("click", async () => {
-      offsetAngulo = null;
-
+    async function ativarSensoresOrientacao() {
+      if (orientacaoAtiva) return;
       if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         try {
           const permissao = await DeviceOrientationEvent.requestPermission();
           if (permissao === 'granted') {
             window.addEventListener("deviceorientation", lidarOrientacao);
+            orientacaoAtiva = true;
           }
-        } catch (e) {
-          console.error("Erro na permissão de orientação:", e);
+        } catch (err) {
+          console.warn("Permissão de orientação recusada:", err);
         }
       } else {
         window.addEventListener("deviceorientation", lidarOrientacao);
+        orientacaoAtiva = true;
       }
+    }
 
+    // Início de Partida
+    btnIniciar.addEventListener("click", async () => {
+      offsetAngulo = null;
+      if (gerenciadorControles.modo === 'giroscopio') {
+        await ativarSensoresOrientacao();
+      }
       telaInicio.classList.add("oculto");
       jogoAtivo = true;
     });
 
-    // Controles de Toque (Pointer Events)
-    botaoAvancar.addEventListener("pointerdown", (e) => {
-      e.preventDefault();
-      avancando = true;
-      botaoAvancar.classList.add("pressionado");
-    });
-    window.addEventListener("pointerup", () => {
-      avancando = false;
-      botaoAvancar.classList.remove("pressionado");
-    });
-    window.addEventListener("pointercancel", () => {
-      avancando = false;
-      botaoAvancar.classList.remove("pressionado");
-    });
-
-    // Colisão
+    // Colisão do Raycaster
     function obterTipoBloco(px, py) {
       const ix = Math.floor(px);
       const iy = Math.floor(py);
@@ -296,14 +606,14 @@
       return obterTipoBloco(px, py) === 1;
     }
 
-    // Raycasting
+    // Traçado de Raios
     function raio(angulo) {
       const c = Math.cos(angulo);
       const s = Math.sin(angulo);
       let d = 0.0;
       let tipo = 0;
 
-      while (d < 16.0) {
+      while (d < 24.0) {
         tipo = obterTipoBloco(jogador.x + c * d, jogador.y + s * d);
         if (tipo === 1 || tipo === 2) {
           break;
@@ -313,8 +623,17 @@
       return { distancia: d, tipo: tipo };
     }
 
+    // Loop de Atualização
     function atualizar() {
-      if (avancando) {
+      const estado = gerenciadorControles.obterEstadoMovimento();
+
+      // Rotação via botões no modo botoes
+      if (gerenciadorControles.modo === 'botoes') {
+        jogador.ang = gerenciadorControles.atualizarAnguloJogador(jogador.ang, 1.0, 0.045);
+      }
+
+      // Avanço
+      if (estado.avancando) {
         const dx = Math.cos(jogador.ang) * jogador.velocidade;
         const dy = Math.sin(jogador.ang) * jogador.velocidade;
         const margem = 0.22;
@@ -333,13 +652,14 @@
       }
     }
 
+    // Renderização Raycaster 3D
     function renderizar() {
       const meioY = alturaInterna / 2;
 
       // 1. Teto e Chão
-      ctx.fillStyle = "#12131a";
+      ctx.fillStyle = "#0f172a";
       ctx.fillRect(0, 0, larguraInterna, meioY);
-      ctx.fillStyle = "#3e2723";
+      ctx.fillStyle = "#27272a";
       ctx.fillRect(0, meioY, larguraInterna, meioY);
 
       // 2. Colunas de Parede
@@ -354,22 +674,22 @@
         const dCorrigida = Math.max(0.0001, d * Math.cos(a - jogador.ang));
 
         // Iluminação por distância
-        let luz = Math.max(25, Math.min(220, 220 - dCorrigida * 15));
+        let luz = Math.max(25, Math.min(220, 220 - dCorrigida * 13));
         if (Math.abs(px - Math.round(px)) < 0.035) {
-          luz *= 0.72; // Sombra na aresta vertical
+          luz *= 0.72;
         }
 
         let r, g, b;
         if (tipoBloco === 2) {
-          // Saída verde esmeralda luminoso
-          r = Math.floor(luz * 0.4);
-          g = Math.floor(luz * 1.15);
-          b = Math.floor(luz * 0.6);
+          // Saída verde esmeralda luminosa
+          r = Math.floor(luz * 0.35);
+          g = Math.floor(luz * 1.25);
+          b = Math.floor(luz * 0.55);
         } else {
-          // Parede de tijolo/pedra
-          r = Math.floor(luz);
+          // Parede de pedra
+          r = Math.floor(luz * 0.95);
           g = Math.floor(luz * 0.88);
-          b = Math.floor(luz * 0.75);
+          b = Math.floor(luz * 0.82);
         }
 
         const h = Math.min(alturaInterna, Math.floor(alturaInterna / dCorrigida));
@@ -380,7 +700,7 @@
       }
 
       // Retículo central
-      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
       ctx.beginPath();
       ctx.arc(larguraInterna / 2, alturaInterna / 2, 1.5, 0, Math.PI * 2);
       ctx.fill();
@@ -395,14 +715,279 @@
     }
 
     function reiniciarJogo() {
-      jogador.x = 1.5;
-      jogador.y = 4.5;
-      jogador.ang = ANGULO_INICIAL;
+      jogador.x = spawnInicial.x;
+      jogador.y = spawnInicial.y;
+      jogador.ang = spawnInicial.ang;
       offsetAngulo = null;
       telaVitoria.classList.remove("visivel");
       jogoAtivo = true;
     }
 
+    btnVitoriaReiniciar.addEventListener("click", reiniciarJogo);
+    btnVitoriaOutroMapa.addEventListener("click", () => {
+      telaVitoria.classList.remove("visivel");
+      abrirModalAdmin();
+    });
+
+    // ==========================================
+    // SISTEMA ADMINISTRATIVO & UPLOAD DE IMAGEM
+    // ==========================================
+
+    let imgCarregada = null;
+    let gradeAdmin = null;
+    let pontoInicioAdmin = null;
+    let pontoSaidaAdmin = null;
+    let modoControleSelecionado = 'giroscopio';
+
+    function abrirModalAdmin() {
+      modalAdmin.classList.add("visivel");
+      if (!imgCarregada) {
+        // Gera um labirinto padrão inicial para preview
+        gerarLabirintoDemonstracao();
+      } else {
+        atualizarAmostragemPreview();
+      }
+    }
+
+    function fecharModalAdmin() {
+      modalAdmin.classList.remove("visivel");
+    }
+
+    btnAbrirAdmin.addEventListener("click", abrirModalAdmin);
+    btnFecharAdmin.addEventListener("click", fecharModalAdmin);
+
+    // Seleção de Modo no Admin
+    modoGiroBtn.addEventListener("click", () => {
+      modoControleSelecionado = 'giroscopio';
+      modoGiroBtn.classList.add("ativo");
+      modoBotoesBtn.classList.remove("ativo");
+    });
+    modoBotoesBtn.addEventListener("click", () => {
+      modoControleSelecionado = 'botoes';
+      modoBotoesBtn.classList.add("ativo");
+      modoGiroBtn.classList.remove("ativo");
+    });
+
+    // Slider de Resolução
+    sliderTamanhoGrade.addEventListener("input", (e) => {
+      const tamanho = e.target.value;
+      labelTamanhoGrade.textContent = `${tamanho} × ${tamanho}`;
+      if (imgCarregada) {
+        atualizarAmostragemPreview();
+      }
+    });
+
+    // Upload de Arquivo de Imagem
+    inputImagemLabirinto.addEventListener("change", (e) => {
+      const arquivo = e.target.files[0];
+      if (!arquivo) return;
+
+      const reader = new FileReader();
+      reader.onload = (eventoLeitura) => {
+        const img = new Image();
+        img.onload = () => {
+          imgCarregada = img;
+          pontoInicioAdmin = null;
+          pontoSaidaAdmin = null;
+          atualizarAmostragemPreview();
+        };
+        img.src = eventoLeitura.target.result;
+      };
+      reader.readAsDataURL(arquivo);
+    });
+
+    // Gera um mapa de demonstração para quando o admin abrir sem imagem
+    function gerarLabirintoDemonstracao() {
+      const canvasTmp = document.createElement("canvas");
+      canvasTmp.width = 160;
+      canvasTmp.height = 160;
+      const ctxTmp = canvasTmp.getContext("2d");
+
+      ctxTmp.fillStyle = "#ffffff";
+      ctxTmp.fillRect(0, 0, 160, 160);
+
+      ctxTmp.fillStyle = "#000000";
+      // Desenha paredes de demonstração
+      ctxTmp.fillRect(20, 20, 120, 16);
+      ctxTmp.fillRect(60, 50, 20, 80);
+      ctxTmp.fillRect(100, 70, 40, 20);
+      ctxTmp.fillRect(20, 100, 50, 20);
+
+      const img = new Image();
+      img.onload = () => {
+        imgCarregada = img;
+        atualizarAmostragemPreview();
+      };
+      img.src = canvasTmp.toDataURL();
+    }
+
+    function atualizarAmostragemPreview() {
+      if (!imgCarregada) return;
+
+      const tamanho = parseInt(sliderTamanhoGrade.value, 10);
+      const canvasTmp = document.createElement("canvas");
+      canvasTmp.width = imgCarregada.naturalWidth || imgCarregada.width;
+      canvasTmp.height = imgCarregada.naturalHeight || imgCarregada.height;
+      const ctxTmp = canvasTmp.getContext("2d");
+      ctxTmp.drawImage(imgCarregada, 0, 0);
+
+      const imgData = ctxTmp.getImageData(0, 0, canvasTmp.width, canvasTmp.height);
+      const gradeBruta = MazeParser.amostrarGrade(imgData.data, canvasTmp.width, canvasTmp.height, tamanho, tamanho, 128);
+      gradeAdmin = MazeParser.garantirParedesPerimetro(gradeBruta);
+
+      desenharPreview();
+      atualizarEstadoBotaoJogar();
+    }
+
+    function desenharPreview() {
+      if (!gradeAdmin) return;
+
+      const linhas = gradeAdmin.length;
+      const colunas = gradeAdmin[0].length;
+      const tamCelulaW = canvasPreview.width / colunas;
+      const tamCelulaH = canvasPreview.height / linhas;
+
+      ctxPreview.clearRect(0, 0, canvasPreview.width, canvasPreview.height);
+
+      for (let y = 0; y < linhas; y++) {
+        for (let x = 0; x < colunas; x++) {
+          const tipo = gradeAdmin[y][x];
+          ctxPreview.fillStyle = (tipo === 1) ? "#090d16" : "#ffffff";
+          ctxPreview.fillRect(x * tamCelulaW, y * tamCelulaH, tamCelulaW, tamCelulaH);
+        }
+      }
+
+      // Grid sutil
+      ctxPreview.strokeStyle = "rgba(100, 116, 139, 0.25)";
+      ctxPreview.lineWidth = 0.5;
+      for (let x = 0; x <= colunas; x++) {
+        ctxPreview.beginPath();
+        ctxPreview.moveTo(x * tamCelulaW, 0);
+        ctxPreview.lineTo(x * tamCelulaW, canvasPreview.height);
+        ctxPreview.stroke();
+      }
+      for (let y = 0; y <= linhas; y++) {
+        ctxPreview.beginPath();
+        ctxPreview.moveTo(0, y * tamCelulaH);
+        ctxPreview.lineTo(canvasPreview.width, y * tamCelulaH);
+        ctxPreview.stroke();
+      }
+
+      // Marcador de Início (🟢)
+      if (pontoInicioAdmin) {
+        ctxPreview.fillStyle = "#22c55e";
+        ctxPreview.beginPath();
+        ctxPreview.arc(
+          (pontoInicioAdmin.x + 0.5) * tamCelulaW,
+          (pontoInicioAdmin.y + 0.5) * tamCelulaH,
+          tamCelulaW * 0.45,
+          0,
+          Math.PI * 2
+        );
+        ctxPreview.fill();
+        ctxPreview.strokeStyle = "#ffffff";
+        ctxPreview.lineWidth = 1.5;
+        ctxPreview.stroke();
+      }
+
+      // Marcador de Saída (🏁)
+      if (pontoSaidaAdmin) {
+        ctxPreview.fillStyle = "#eab308";
+        ctxPreview.beginPath();
+        ctxPreview.arc(
+          (pontoSaidaAdmin.x + 0.5) * tamCelulaW,
+          (pontoSaidaAdmin.y + 0.5) * tamCelulaH,
+          tamCelulaW * 0.45,
+          0,
+          Math.PI * 2
+        );
+        ctxPreview.fill();
+        ctxPreview.strokeStyle = "#ffffff";
+        ctxPreview.lineWidth = 1.5;
+        ctxPreview.stroke();
+      }
+    }
+
+    // Interação com o Canvas de Preview
+    canvasPreview.addEventListener("pointerdown", (e) => {
+      if (!gradeAdmin) return;
+      const rect = canvasPreview.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const colunas = gradeAdmin[0].length;
+      const linhas = gradeAdmin.length;
+      const cellX = Math.floor((clickX / rect.width) * colunas);
+      const cellY = Math.floor((clickY / rect.height) * linhas);
+
+      if (cellX < 0 || cellX >= colunas || cellY < 0 || cellY >= linhas) return;
+
+      // 1º clique define início; 2º clique define saída; 3º redefine início
+      if (!pontoInicioAdmin) {
+        pontoInicioAdmin = { x: cellX, y: cellY };
+        previewStatusTexto.textContent = "Início marcado 🟢. Agora clique na SAÍDA (🏁)!";
+      } else if (!pontoSaidaAdmin) {
+        if (cellX === pontoInicioAdmin.x && cellY === pontoInicioAdmin.y) return;
+        pontoSaidaAdmin = { x: cellX, y: cellY };
+        previewStatusTexto.textContent = "Pronto! Início 🟢 e Saída 🏁 definidos.";
+      } else {
+        // Redefine
+        pontoInicioAdmin = { x: cellX, y: cellY };
+        pontoSaidaAdmin = null;
+        previewStatusTexto.textContent = "Novo Início 🟢. Agora clique na SAÍDA (🏁)!";
+      }
+
+      desenharPreview();
+      atualizarEstadoBotaoJogar();
+    });
+
+    btnResetPontos.addEventListener("click", () => {
+      pontoInicioAdmin = null;
+      pontoSaidaAdmin = null;
+      previewStatusTexto.textContent = "1º clique: Início (🟢) | 2º clique: Saída (🏁)";
+      desenharPreview();
+      atualizarEstadoBotaoJogar();
+    });
+
+    function atualizarEstadoBotaoJogar() {
+      const pronto = Boolean(pontoInicioAdmin && pontoSaidaAdmin && gradeAdmin);
+      btnJogarCustom.disabled = !pronto;
+      btnJogarCustom.style.opacity = pronto ? "1" : "0.5";
+      btnJogarCustom.style.cursor = pronto ? "pointer" : "not-allowed";
+    }
+
+    // Carregar Fase Customizada no Raycaster
+    btnJogarCustom.addEventListener("click", async () => {
+      if (!pontoInicioAdmin || !pontoSaidaAdmin || !gradeAdmin) return;
+
+      const resultado = MazeParser.aplicarPontosNoMapa(gradeAdmin, pontoInicioAdmin, pontoSaidaAdmin);
+      if (!resultado.inicioValido || !resultado.saidaValida) return;
+
+      mapa = resultado.mapa;
+      spawnInicial = {
+        x: pontoInicioAdmin.x + 0.5,
+        y: pontoInicioAdmin.y + 0.5,
+        ang: ANGULO_INICIAL
+      };
+
+      aplicarModoControle(modoControleSelecionado);
+      fecharModalAdmin();
+      telaInicio.classList.add("oculto");
+
+      jogador.x = spawnInicial.x;
+      jogador.y = spawnInicial.y;
+      jogador.ang = spawnInicial.ang;
+      offsetAngulo = null;
+
+      if (modoControleSelecionado === 'giroscopio') {
+        await ativarSensoresOrientacao();
+      }
+
+      jogoAtivo = true;
+    });
+
+    // Inicialização
+    aplicarModoControle('giroscopio');
     redimensionar();
     loop();
   </script>
