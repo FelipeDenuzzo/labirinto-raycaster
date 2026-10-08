@@ -65,31 +65,38 @@
      *
      * @param {number} deltaX
      * @param {number} deltaY
-     * @param {number} [deadzone=12] - Raio de tolerância neutra em pixels
+     * @param {number} [deadzone=18] - Raio neutro aumentado para dar firmeza e evitar tremores
      */
-    processarVetorArraste(deltaX, deltaY, deadzone = 12) {
+    processarVetorArraste(deltaX, deltaY, deadzone = 18) {
       if (this.modo !== 'arrastar') return;
 
-      // Avançar ao puxar para cima
+      // Avançar ao puxar para cima (com curso firme)
       if (deltaY < -deadzone) {
         this.avancando = true;
       } else {
         this.avancando = false;
       }
 
-      // Girar para os lados
-      if (deltaX > deadzone) {
-        this.girandoDireita = true;
-        this.girandoEsquerda = false;
-        this.intensidadeGiro = Math.min(1.8, Math.max(0.6, Math.abs(deltaX) / 38));
-      } else if (deltaX < -deadzone) {
-        this.girandoEsquerda = true;
-        this.girandoDireita = false;
-        this.intensidadeGiro = Math.min(1.8, Math.max(0.6, Math.abs(deltaX) / 38));
+      // Girar para os lados com resposta densa, ponderada e progressiva
+      const absX = Math.abs(deltaX);
+      if (absX > deadzone) {
+        // Normaliza de 0 a 1 ao longo de um deslocamento suave de 60px
+        const progresso = Math.min(1.0, (absX - deadzone) / 55);
+        // Curva exponencial suave (evita solavancos bruscos, resposta muito mais densa)
+        const intensidade = Math.pow(progresso, 1.25) * 0.85;
+
+        if (deltaX > 0) {
+          this.girandoDireita = true;
+          this.girandoEsquerda = false;
+        } else {
+          this.girandoEsquerda = true;
+          this.girandoDireita = false;
+        }
+        this.intensidadeGiro = intensidade;
       } else {
         this.girandoDireita = false;
         this.girandoEsquerda = false;
-        this.intensidadeGiro = 1.0;
+        this.intensidadeGiro = 0;
       }
     }
 
@@ -100,7 +107,7 @@
       this.avancando = false;
       this.girandoEsquerda = false;
       this.girandoDireita = false;
-      this.intensidadeGiro = 1.0;
+      this.intensidadeGiro = 0;
       this.origemArraste = null;
     }
 
@@ -119,13 +126,15 @@
       }
 
       let ang = anguloAtual;
-      const mult = (this.modo === 'arrastar' && this.intensidadeGiro) ? this.intensidadeGiro : 1.0;
+      // No modo arrastar, aplica velocidade angular mais densa e ponderada
+      const velBase = (this.modo === 'arrastar') ? 0.036 : velocidadeGiro;
+      const mult = (this.modo === 'arrastar') ? (this.intensidadeGiro || 0) : 1.0;
 
       if (this.girandoEsquerda) {
-        ang -= velocidadeGiro * delta * mult;
+        ang -= velBase * delta * mult;
       }
       if (this.girandoDireita) {
-        ang += velocidadeGiro * delta * mult;
+        ang += velBase * delta * mult;
       }
 
       // Normaliza para o intervalo [-PI, PI]
