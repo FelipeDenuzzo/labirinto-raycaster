@@ -6,19 +6,27 @@ Jogo de labirinto pseudo-3D (Raycaster) otimizado para celulares e navegadores m
 
 ## 🕹️ Modos de Controle
 
-O jogo oferece suporte a dois esquemas de controle adaptáveis:
+O jogo oferece suporte a três esquemas de controle adaptáveis:
 
 ### 1. 🧭 Modo Giroscópio 360° (Rotação Física)
 - **Como funciona:** O jogador fica em pé ou sentado e gira no próprio eixo segurando o aparelho para olhar em 360°.
 - **Sensores:** Utiliza `webkitCompassHeading` no iOS e `alpha` (com compensação de orientação) no Android.
 - **Movimento:** Botão único virtual **"AVANÇAR"** na parte inferior da tela.
 
-### 2. 🕹️ Modo Botões na Tela (Controle Tátil)
-- **Como funciona:** Não exige giroscópio físico. O jogador controla a navegação totalmente por 3 botões ergonômicos na base da tela:
-  - `↺ GIRAR ESQUERDA`: Gira suavemente a visão no sentido anti-horário.
-  - `⬆ AVANÇAR`: Caminha para a frente na direção apontada.
-  - `↻ GIRAR DIREITA`: Gira suavemente a visão no sentido horário.
-- **Multi-toque:** Suporte a toque contínuo simultâneo para avançar e girar ao mesmo tempo.
+### 2. 🕹️ Modo Arrastar na Tela (Joystick Virtual Dinâmico)
+- **Como funciona:** Tela limpa e imersiva. Basta tocar e manter o dedo em qualquer lugar da tela:
+  - `⬆ Deslizar para cima`: Caminha para a frente.
+  - `↺ Deslizar para a esquerda`: Gira suavemente a visão para a esquerda.
+  - `↻ Deslizar para a direita`: Gira suavemente a visão para a direita.
+  - `↗ / ↖ Deslizar em diagonal`: Avança e gira simultaneamente.
+  - Um anel guia luminoso com ponto central surge sob o polegar para dar feedback tátil preciso.
+
+### 3. 🔲 Modo Botões na Tela (Controle Tátil Tradicional)
+- **Como funciona:** Não exige giroscópio. Três botões ergonômicos na base da tela:
+  - `↺ GIRAR ESQUERDA`: Gira no sentido anti-horário.
+  - `⬆ AVANÇAR`: Caminha em frente.
+  - `↻ GIRAR DIREITA`: Gira no sentido horário.
+- **Multi-toque:** Suporte a toque simultâneo para avançar e girar ao mesmo tempo.
 
 ---
 

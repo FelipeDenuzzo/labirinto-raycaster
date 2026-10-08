@@ -293,12 +293,12 @@
     }
     .opcoes-modo {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
     }
     .btn-modo {
-      padding: 8px 6px;
-      font-size: 0.82rem;
+      padding: 8px 4px;
+      font-size: 0.78rem;
       border: 1px solid rgba(255, 255, 255, 0.2);
       background: rgba(15, 23, 42, 0.6);
       color: #cbd5e1;
@@ -313,6 +313,33 @@
       color: #fff;
       border-color: #38bdf8;
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+
+    /* Joystick Virtual para Modo Arrastar */
+    #joystick-indicador {
+      position: absolute;
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      border: 2px solid rgba(56, 189, 248, 0.65);
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(15, 23, 42, 0.45) 100%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      display: none;
+      z-index: 35;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      backdrop-filter: blur(4px);
+    }
+    #joystick-ponto {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 12px #38bdf8;
+      transform: translate(-50%, -50%);
     }
     .preview-container {
       display: flex;
@@ -386,6 +413,11 @@
 
   <canvas id="tela-jogo"></canvas>
 
+  <!-- Joystick Flutuante para Modo Arrastar -->
+  <div id="joystick-indicador">
+    <div id="joystick-ponto"></div>
+  </div>
+
   <div id="hud-info">Gire o corpo 360° para olhar</div>
 
   <!-- Controles da Fase -->
@@ -441,8 +473,9 @@
       <div class="seletor-grupo">
         <span class="seletor-titulo">Modo de Controle Desta Fase</span>
         <div class="opcoes-modo">
-          <button type="button" class="btn-modo ativo" id="modo-giro-btn">🧭 Giroscópio 360°</button>
-          <button type="button" class="btn-modo" id="modo-botoes-btn">🕹️ Botões na Tela</button>
+          <button type="button" class="btn-modo ativo" id="modo-giro-btn">🧭 Giroscópio</button>
+          <button type="button" class="btn-modo" id="modo-arrastar-btn">🕹️ Arrastar</button>
+          <button type="button" class="btn-modo" id="modo-botoes-btn">🔲 Botões</button>
         </div>
       </div>
 
@@ -498,7 +531,10 @@
     const sliderTamanhoGrade = document.getElementById("slider-tamanho-grade");
     const labelTamanhoGrade = document.getElementById("label-tamanho-grade");
     const modoGiroBtn = document.getElementById("modo-giro-btn");
+    const modoArrastarBtn = document.getElementById("modo-arrastar-btn");
     const modoBotoesBtn = document.getElementById("modo-botoes-btn");
+    const joystickIndicador = document.getElementById("joystick-indicador");
+    const joystickPonto = document.getElementById("joystick-ponto");
     const canvasPreview = document.getElementById("canvas-preview");
     const ctxPreview = canvasPreview.getContext("2d");
     const previewStatusTexto = document.getElementById("preview-status-texto");
@@ -574,6 +610,12 @@
         hudInfo.textContent = "Gire o corpo 360° para olhar";
         descModoInicio.innerHTML = "Fique em pé ou sentado e <strong>gire no próprio eixo</strong> para olhar ao redor. Segure o botão para andar.";
         gerenciadorControles.vincularBotoes(botaoAvancar, null, null);
+      } else if (modo === 'arrastar') {
+        controlesBotoes.style.display = 'none';
+        botaoAvancar.style.display = 'none';
+        hudInfo.textContent = "Arraste para cima para andar, lados para girar";
+        descModoInicio.innerHTML = "Toque na tela e <strong>arraste para cima para andar</strong> e <strong>para os lados para girar</strong>.";
+        gerenciadorControles.vincularArraste(canvas, joystickIndicador, joystickPonto);
       } else {
         controlesBotoes.style.display = 'flex';
         botaoAvancar.style.display = 'none';
@@ -670,8 +712,8 @@
     function atualizar() {
       const estado = gerenciadorControles.obterEstadoMovimento();
 
-      // Rotação via botões no modo botoes
-      if (gerenciadorControles.modo === 'botoes') {
+      // Rotação via botões ou arraste na tela
+      if (gerenciadorControles.modo === 'botoes' || gerenciadorControles.modo === 'arrastar') {
         jogador.ang = gerenciadorControles.atualizarAnguloJogador(jogador.ang, 1.0, 0.045);
       }
 
@@ -803,12 +845,20 @@
     modoGiroBtn.addEventListener("click", () => {
       modoControleSelecionado = 'giroscopio';
       modoGiroBtn.classList.add("ativo");
+      modoArrastarBtn.classList.remove("ativo");
+      modoBotoesBtn.classList.remove("ativo");
+    });
+    modoArrastarBtn.addEventListener("click", () => {
+      modoControleSelecionado = 'arrastar';
+      modoArrastarBtn.classList.add("ativo");
+      modoGiroBtn.classList.remove("ativo");
       modoBotoesBtn.classList.remove("ativo");
     });
     modoBotoesBtn.addEventListener("click", () => {
       modoControleSelecionado = 'botoes';
       modoBotoesBtn.classList.add("ativo");
       modoGiroBtn.classList.remove("ativo");
+      modoArrastarBtn.classList.remove("ativo");
     });
 
     // Slider de Resolução

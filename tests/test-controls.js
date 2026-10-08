@@ -37,4 +37,43 @@ ctrl.setGirandoDireita(true);
 novoAngulo = ctrl.atualizarAnguloJogador(0, 1.0, 0.05);
 assert.strictEqual(novoAngulo, 0, 'Modo giroscópio não rotaciona com botões virtuais');
 
+// Teste 5: Modo Arrastar na Tela
+ctrl.definirModo('arrastar');
+assert.strictEqual(ctrl.modo, 'arrastar');
+
+// Sem toque: parado
+assert.strictEqual(ctrl.obterEstadoMovimento().avancando, false);
+novoAngulo = ctrl.atualizarAnguloJogador(0, 1.0, 0.045);
+assert.strictEqual(novoAngulo, 0, 'Sem arrasto não deve girar');
+
+// Arrastar para cima: deltaY = -40, deltaX = 0 -> avança para frente
+ctrl.processarVetorArraste(0, -40);
+assert.strictEqual(ctrl.obterEstadoMovimento().avancando, true, 'Arrastar para cima deve acionar avanço');
+novoAngulo = ctrl.atualizarAnguloJogador(0, 1.0, 0.045);
+assert.strictEqual(novoAngulo, 0, 'Arrasto reto para cima não deve girar');
+
+// Arrastar para a direita: deltaY = 0, deltaX = 50 -> gira para direita
+ctrl.processarVetorArraste(50, 0);
+assert.strictEqual(ctrl.obterEstadoMovimento().avancando, false, 'Arrasto lateral não avança');
+novoAngulo = ctrl.atualizarAnguloJogador(0, 1.0, 0.045);
+assert.ok(novoAngulo > 0, 'Arrastar para a direita deve girar para a direita');
+
+// Arrastar para a esquerda: deltaY = 0, deltaX = -50 -> gira para esquerda
+ctrl.processarVetorArraste(-50, 0);
+novoAngulo = ctrl.atualizarAnguloJogador(0, 1.0, 0.045);
+assert.ok(novoAngulo < 0, 'Arrastar para a esquerda deve girar para a esquerda');
+
+// Arrastar na diagonal (cima + direita): avança e gira simultaneamente
+ctrl.processarVetorArraste(45, -35);
+assert.strictEqual(ctrl.obterEstadoMovimento().avancando, true, 'Diagonal para cima deve avançar');
+novoAngulo = ctrl.atualizarAnguloJogador(0, 1.0, 0.045);
+assert.ok(novoAngulo > 0, 'Diagonal para a direita deve girar');
+
+// Soltar o dedo: deve zerar todos os movimentos
+ctrl.finalizarArraste();
+assert.strictEqual(ctrl.obterEstadoMovimento().avancando, false, 'Soltar o dedo deve parar o avanço');
+novoAngulo = ctrl.atualizarAnguloJogador(0, 1.0, 0.045);
+assert.strictEqual(novoAngulo, 0, 'Soltar o dedo deve parar a rotação');
+
 console.log('✓ Todos os testes de controls passaram com sucesso!');
+
