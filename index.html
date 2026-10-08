@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Labirinto Raycaster 3D Mobile</title>
   <style>
     * {
@@ -16,6 +16,12 @@
     body, html {
       width: 100%;
       height: 100%;
+      height: 100dvh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background-color: #0b0c10;
       overflow: hidden;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -24,8 +30,9 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
       display: block;
       image-rendering: pixelated;
     }
@@ -33,40 +40,40 @@
     /* HUD Superior */
     #hud-info {
       position: absolute;
-      top: 18px;
+      top: max(14px, env(safe-area-inset-top, 14px));
       left: 50%;
       transform: translateX(-50%);
-      width: 90%;
-      max-width: 420px;
+      width: calc(100% - 32px);
+      max-width: 400px;
       text-align: center;
       color: rgba(255, 255, 255, 0.9);
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 600;
       letter-spacing: 0.5px;
       z-index: 20;
       pointer-events: none;
-      padding: 8px 16px;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 14px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 20px;
       text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
     }
 
     /* Botão Único (Modo Giroscópio) */
     #botao-avancar {
       position: absolute;
-      bottom: 32px;
+      bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
       left: 50%;
       transform: translateX(-50%);
-      width: 220px;
-      height: 64px;
-      background: rgba(255, 255, 255, 0.18);
-      border: 2px solid rgba(255, 255, 255, 0.55);
-      border-radius: 32px;
+      width: min(230px, calc(100% - 48px));
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      border-radius: 30px;
       color: #fff;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 800;
       letter-spacing: 2px;
       backdrop-filter: blur(14px);
@@ -84,25 +91,28 @@
     /* Barra de 3 Botões (Modo Botões na Tela) */
     #controles-botoes {
       position: absolute;
-      bottom: 24px;
-      left: 0;
+      bottom: max(16px, calc(env(safe-area-inset-bottom, 0px) + 12px));
+      left: 50%;
+      transform: translateX(-50%);
       width: 100%;
+      max-width: 440px;
       display: none; /* Ativado via JS no modo botoes */
       justify-content: space-between;
       align-items: center;
-      padding: 0 20px;
+      padding: 0 max(16px, env(safe-area-inset-left, 16px));
+      gap: 10px;
       z-index: 25;
       pointer-events: none;
     }
     .btn-controle {
       pointer-events: auto;
       touch-action: none;
-      background: rgba(15, 23, 42, 0.75);
-      border: 2px solid rgba(255, 255, 255, 0.35);
-      border-radius: 28px;
+      background: rgba(15, 23, 42, 0.78);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 26px;
       color: #fff;
       backdrop-filter: blur(16px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -110,22 +120,25 @@
       transition: background 0.12s, transform 0.08s, border-color 0.12s;
     }
     .btn-girar {
-      width: 68px;
-      height: 68px;
-      font-size: 1.8rem;
+      width: 62px;
+      height: 62px;
+      min-width: 62px;
+      font-size: 1.6rem;
     }
     .btn-avancar-centro {
-      height: 68px;
-      padding: 0 28px;
-      font-size: 1.15rem;
-      letter-spacing: 1.5px;
-      border-radius: 34px;
+      height: 62px;
+      flex: 1;
+      max-width: 180px;
+      padding: 0 16px;
+      font-size: 1.05rem;
+      letter-spacing: 1.2px;
+      border-radius: 31px;
       background: rgba(30, 41, 59, 0.85);
     }
     .btn-controle:active, .btn-controle.pressionado {
       background: rgba(56, 189, 248, 0.5);
       border-color: #38bdf8;
-      transform: scale(0.94);
+      transform: scale(0.93);
     }
     .btn-avancar-centro:active, .btn-avancar-centro.pressionado {
       background: rgba(74, 222, 128, 0.5);
@@ -135,10 +148,10 @@
     /* Tela Inicial */
     #tela-inicio {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
       background: radial-gradient(circle at center, rgba(30, 41, 59, 0.95) 0%, rgba(10, 12, 18, 0.98) 100%);
       color: #fff;
       display: flex;
@@ -203,18 +216,19 @@
     /* Modal do Administrador */
     #modal-admin {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(11, 15, 25, 0.92);
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background: rgba(11, 15, 25, 0.94);
       backdrop-filter: blur(18px);
       z-index: 60;
       display: none;
       flex-direction: column;
       align-items: center;
-      padding: 18px;
+      padding: max(12px, env(safe-area-inset-top, 12px)) max(12px, env(safe-area-inset-right, 12px)) max(24px, calc(env(safe-area-inset-bottom, 0px) + 20px)) max(12px, env(safe-area-inset-left, 12px));
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       color: #f8fafc;
     }
     #modal-admin.visivel {
@@ -223,14 +237,15 @@
     .modal-card {
       width: 100%;
       max-width: 480px;
-      background: rgba(30, 41, 59, 0.7);
+      background: rgba(30, 41, 59, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
-      padding: 20px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      margin-bottom: 20px;
     }
     .modal-cabecalho {
       display: flex;
@@ -306,8 +321,10 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
     #canvas-preview {
-      width: 240px;
-      height: 240px;
+      width: min(220px, 60vw);
+      height: min(220px, 60vw);
+      max-width: 220px;
+      max-height: 220px;
       background: #000;
       border-radius: 8px;
       cursor: crosshair;
@@ -329,11 +346,11 @@
     /* Tela de Vitória */
     #tela-vitoria {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.92);
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background: rgba(0, 0, 0, 0.94);
       color: #fff;
       display: none;
       flex-direction: column;
@@ -341,7 +358,7 @@
       justify-content: center;
       z-index: 70;
       text-align: center;
-      padding: 24px;
+      padding: max(20px, env(safe-area-inset-top, 20px)) max(20px, env(safe-area-inset-right, 20px)) max(28px, calc(env(safe-area-inset-bottom, 0px) + 24px)) max(20px, env(safe-area-inset-left, 20px));
       backdrop-filter: blur(16px);
     }
     #tela-vitoria.visivel {
@@ -510,9 +527,11 @@
     const FOV = Math.PI / 3;
 
     function redimensionar() {
-      const aspecto = window.innerHeight / window.innerWidth;
+      const w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+      const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const aspecto = h / w;
       larguraInterna = 240;
-      alturaInterna = Math.round(larguraInterna * aspecto);
+      alturaInterna = Math.max(120, Math.round(larguraInterna * aspecto));
       colunas = 120;
       larguraColuna = larguraInterna / colunas;
 
@@ -520,6 +539,10 @@
       canvas.height = alturaInterna;
     }
     window.addEventListener("resize", redimensionar);
+    window.addEventListener("orientationchange", () => setTimeout(redimensionar, 150));
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", redimensionar);
+    }
 
     // Configuração dos Controles por Fase
     function aplicarModoControle(modo) {
